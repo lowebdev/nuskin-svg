@@ -1,8 +1,8 @@
 {
   "name": "nuskin",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Why should it be complicated to batch recolor your svg icons? Change your svg icon's fill &amp; stroke colors easily with this simple command line tool (might code a gui later if i'm motivated enough).",
-  "main": "index.js",
+  "main": "bin/index.js",
   "scripts": {
     "test": "node index.js"
   },
@@ -26,5 +26,11 @@
   "bugs": {
     "url": "https://github.com/lowebdev/nuskin-svg/issues"
   },
-  "homepage": "https://github.com/lowebdev/nuskin-svg#readme"
+  "homepage": "https://github.com/lowebdev/nuskin-svg#readme",
+  "bin": {
+    "nuskin": "./bin/index.js"
+  },
+  "dependencies": {
+    "yargs": "^15.3.0"
+  }
 }
