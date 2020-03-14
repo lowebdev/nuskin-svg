@@ -11,7 +11,7 @@ const color = args[1]
 // 1- fs get folder from arg 0
 // 2- scan for all svg files
 // 3- for each files, get file content and change fill="" (regex) for hex color then save
-async function main() {
+exports.recolor = async function recolor() {
   try {
     
     const filenames = await getFolderContentInfo(folderPath)
@@ -69,5 +69,3 @@ async function getFolderContentInfo(folderName) {
     })
   })
 }
-
-main()
