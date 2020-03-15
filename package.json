@@ -19,7 +19,9 @@
     "skin",
     "recolor",
     "fill",
-    "stroke"
+    "stroke",
+    "background",
+    "new skin"
   ],
   "author": "Olivier Lepage",
   "license": "ISC",
