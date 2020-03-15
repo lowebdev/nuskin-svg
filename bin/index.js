@@ -4,24 +4,28 @@ const fs = require('fs')
 const yargs = require('yargs')
 const fillRegex = /(fill=")#{0,1}([A-z]|[0-9]){0,}"/
 
+yargs.command('recolor <path> <color>', '.....  Recolors .svgs\' fill color', (yargs) => {
+  yargs.positional('path', {
+    alias: 'p',
+    describe: 'Directory containing SVG files to be recolored',
+    type: 'string'
+  }).positional('color', {
+    alias: 'c',
+    describe: 'The color you want to apply to svgs\' fill attribute (only supports CSS values e.g.: blue, rgb(0,0,0), #beeeef)',
+    type: 'string'
+  })
+}, recolor)
+.help()
+.argv
+
+
 // Arguments
-// 0: Folder path containing SVG files
-// 1: Color replacement
-// const args = process.argv.slice(2);
-yargs.options
-const options = yargs
- .usage('Usage: -d <dir> -c <color>')
- .option('d', { alias: 'dir', describe: 'Directory containing SVG files to be recolored', type: 'string', demandOption: true })
- .option('c', { alias: 'color', describe: 'The color (only supports hex values) you want to apply to svgs\' fill attribute', type: 'string', demandOption: true })
- .argv
+// 0: <path> Folder path containing SVG files
+// 1: <color> Color replacement
+async function recolor(argv) {
+  const folderPath = argv.path
+  const color = argv.color
 
-const folderPath = options.d
-const color = options.c
-
-// 1- fs get folder from arg 0
-// 2- scan for all svg files
-// 3- for each files, get file content and change fill="" (regex) for hex color then save
-async function recolor() {
   try {
     
     const filenames = await getFolderContentInfo(folderPath)
@@ -79,5 +83,3 @@ async function getFolderContentInfo(folderName) {
     })
   })
 }
-
-recolor()
