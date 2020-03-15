@@ -4,7 +4,11 @@ const fs = require('fs')
 const yargs = require('yargs')
 const fillRegex = /(fill=")#{0,1}([A-z]|[0-9]){0,}"/
 
-yargs.command('recolor <path> <color>', '.....  Recolors .svgs\' fill color', (yargs) => {
+yargs
+.command('$0', 'Default command calls help', () => {}, (argv) => {
+  console.log(`use 'nuskin --help' for a list of commands`)
+})
+.command('recolor <path> <color>', '.....  Recolors .svgs\' fill color', (yargs) => {
   yargs.positional('path', {
     alias: 'p',
     describe: 'Directory containing SVG files to be recolored',

@@ -8,19 +8,19 @@ Why is it so complicated to batch recolor your svg icons? Change your svg icon's
 
 ## Commands
 #### recolor
-```nuskin recolor -d <dirpath> -c <color>```
+```nuskin recolor <path> <color>```
 
-- `-d`: Relative or absolute path to directory containing `*.svg` files
-- `-c`: Valid CSS color _e.g.: rgba(0,0,0,1), #fff, blue, etc._
+- `<path>`: Relative or absolute path to directory containing `*.svg` files
+- `<color>`: Valid CSS color _e.g.: rgba(0,0,0,1), #fff, blue, etc._
 
 >Example:
->`nuskin recolor -d C:/path/to/directory -c #beeeef`
+>`nuskin recolor C:/path/to/directory #beeeef`
 
 
 ## Upcoming changes
 ### `recolor`
 - Function will accept sinlge .svg file as path argument
-- Break down `-c` color arguments into `-f` for fill color, `-b` for background color, `-s` for stroke color.
+- Break down required `<color>` argument into optional `[fill]` color, `[background]` for background color, `[stroke]` for stroke color, defaulting to `fill`.
 
 
 ## Request feature or contribute!
