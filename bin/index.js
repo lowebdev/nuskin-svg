@@ -1,27 +1,23 @@
 #!/usr/bin/env node
 
 const fs = require('fs')
-const yargs = require('yargs')
 const fillRegex = /(fill=")#{0,1}([A-z]|[0-9]){0,}"/
+const yargs = require('yargs')
 
+// .option(name, { alias, describe, type:string, demandOption }) // demandOption == required
 yargs
-.command('$0', 'Default command calls help', () => {}, (argv) => {
-  console.log(`use 'nuskin --help' for a list of commands`)
-})
-.command('recolor <path> <color>', '.....  Recolors .svgs\' fill color', (yargs) => {
-  yargs.positional('path', {
-    alias: 'p',
-    describe: 'Directory containing SVG files to be recolored',
-    type: 'string'
-  }).positional('color', {
-    alias: 'c',
-    describe: 'The color you want to apply to svgs\' fill attribute (only supports CSS values e.g.: blue, rgb(0,0,0), #beeeef)',
-    type: 'string'
+  // Help command
+  .command('$0', 'Default command calls help', () => {}, (argv) => {
+    console.log(`use 'nuskin --help' for a list of commands`)
   })
-}, recolor)
-.help()
-.argv
-
+  // Recolor command
+  .command('recolor', 'Recolors .svgs\' fill color', (yargs) => {
+    return yargs.usage('Usage: nuskin recolor --path <path> --color [color]')
+                .option('path', { alias: 'p', describe: 'Path to directory containing SVG files to be recolored', type: 'string', demandOption: true })
+                .option('color', { alias: 'c', describe: 'The color you want to apply to svgs\' fill attribute (only supports CSS values e.g.: blue, rgb(0,0,0), #beeeef)', type: 'string', default: '#000' })
+  }, recolor)
+  .help()
+  .argv
 
 // Arguments
 // 0: <path> Folder path containing SVG files
