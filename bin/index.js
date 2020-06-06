@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 const fs = require('fs')
+const path = require('path')
 const fillRegex = /fill="([#\(,\)]|[A-z]|[0-9])+"/g
 const fillStyleRegex = /fill:([#\(,\) ]|[A-z]|[0-9])+;/g
 const yargs = require('yargs')
@@ -38,7 +39,7 @@ function recolor(argv) {
 
     for (let i = 0; i < filenames.length; i++) {
       const filename = filenames[i]
-      const fullFilePath = folderPath + '\\' + filename
+      const fullFilePath = folderPath + path.sep + filename
       let svgStrData = fs.readFileSync(fullFilePath).toString('utf8')
 
       // 1- check if fill="<color>"
