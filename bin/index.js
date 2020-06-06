@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 const fs = require('fs')
-const fillRegex = /(fill=")#{0,1}([A-z]|[0-9]){0,}"/
+const fillRegex = /fill="([#\(,\)]|[A-z]|[0-9])+"/g
+const fillStyleRegex = /fill:([#\(,\) ]|[A-z]|[0-9])+;/g
 const yargs = require('yargs')
 
 // .option(name, { alias, describe, type:string, demandOption }) // demandOption == required
@@ -12,74 +13,64 @@ yargs
   })
   // Recolor command
   .command('recolor', 'Recolors .svgs\' fill color', (yargs) => {
-    return yargs.usage('Usage: nuskin recolor --path <path> --color [color]')
+    return yargs.usage('Usage: nuskin recolor --path <path> --fill [fill color]')
                 .option('path', { alias: 'p', describe: 'Path to directory containing SVG files to be recolored', type: 'string', demandOption: true })
-                .option('color', { alias: 'c', describe: 'The color you want to apply to svgs\' fill attribute (only supports CSS values e.g.: blue, rgb(0,0,0), #beeeef)', type: 'string', default: '#000' })
+                .option('fill', { alias: 'f', describe: 'The color you want to apply to svgs\' fill attribute (only supports CSS color values e.g.: blue, rgb(0,0,0), #beeeef)', type: 'string' })
   }, recolor)
   .help()
   .argv
 
 // Arguments
 // 0: <path> Folder path containing SVG files
-// 1: <color> Color replacement
-async function recolor(argv) {
+// 1: [fill] Color replacement
+function recolor(argv) {
   const folderPath = argv.path
-  const color = argv.color
+  const fillColor = argv.fill
+
+  if (!argv.fill && !argv.stroke) {
+    console.log('No fill color provided. Please add a color argument.(see `$ nuskin --help` for more info)') // or stroke color entered.
+    return
+  }
 
   try {
-    
-    const filenames = await getFolderContentInfo(folderPath)
-    console.log(filenames)
+    const filenames = getFolderContentInfo(folderPath)
+    console.log(`Found ${filenames.length} SVG files.\r\n`)
 
     for (let i = 0; i < filenames.length; i++) {
       const filename = filenames[i]
       const fullFilePath = folderPath + '\\' + filename
+      let svgStrData = fs.readFileSync(fullFilePath).toString('utf8')
 
-      fs.readFile(fullFilePath, (err, data) => {
-        const strData = data.toString('utf8')
+      // 1- check if fill="<color>"
+      // 2- check if fill fill:<color>;
 
-        // 1- check if fill=""
-        // 2- else check for <path & replace with <path fill=""
-        const alreadyHasFillColor = (strData.match(fillRegex) || []).length > 0
-        let updatedSvgData
+      // Already has inline fill color. Replace with new color value
+      if ((svgStrData.match(fillRegex) || []).length > 0 && fillColor) {
+        console.log(`Changing inline fill color...`)
+        svgStrData = svgStrData.replace(fillRegex, `fill="${fillColor}"`)
+      }
+      
+      // Already has style fill color. Replace with new color value
+      if ((svgStrData.match(fillStyleRegex) || []).length > 0 && fillColor) {
+        console.log('Changing style fill color...')
+        svgStrData = svgStrData.replace(fillStyleRegex, `fill:${fillColor};`)
+      }
 
-        if (alreadyHasFillColor) {
-
-          // Already has fill color. Replace with new color value
-          console.log('Already had a fill color. Replaced by new fill color')
-          updatedSvgData = strData.replace(fillRegex, `fill="${color}"`)
-        } else {
-
-          // No color yet. Add color
-          console.log('Did not have any color yet. Added fill color')
-          updatedSvgData = strData.replace('<path ', `<path fill="${color}" `)
-        }
-        console.log(updatedSvgData)
-
-        // Overwrite file content with new data
-        fs.writeFile(fullFilePath, updatedSvgData, (err) => {
-          if (err && typeof err === 'error') throw err
-          console.log('Successfully changed color of ' + filename)
-        })
-      })
+      // Overwrite file content with new data
+      fs.writeFileSync(fullFilePath, svgStrData)
+      console.log('Successfully changed color of ' + filename + '!\r\n')
     }
   } catch (err) {
     console.log(err)
   }
-
 }
 
-async function getFolderContentInfo(folderName) {
-  return new Promise((resolve, reject) => {
-
-    fs.readdir(folderName, { withFileTypes: true }, async (err, dirContent) => {
-      if (err) reject(err)
-
-      const files = dirContent.filter(dirent => {
-        return dirent.isFile() && dirent.name.includes('.svg')
-      })
-
-      resolve(files.map(file => file.name))
+function getFolderContentInfo(folderName) {
+  
+  const files = fs.readdirSync(folderName, { withFileTypes: true })
+    .filter(dirent => {
+      return dirent.isFile() && dirent.name.includes('.svg')
     })
-  })
+
+  return files.map(file => file.name)
 }
