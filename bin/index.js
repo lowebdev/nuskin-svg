@@ -2,8 +2,10 @@
 
 const fs = require('fs')
 const path = require('path')
-const fillRegex = /fill="([#\(,\)]|[A-z]|[0-9])+"/g
+// const fillRegex = /fill="([#\(,\)]|[A-z]|[0-9])+"/g
 const fillStyleRegex = /fill:([#\(,\) ]|[A-z]|[0-9])+;/g
+const styleTagRegex = /style="([#\(,:;\) ]|[A-z]|[0-9])+"/g
+const svgStartingTagRegex = /<svg(\s|[a-z]|[A-Z]|["=:;,.]|[^<])+/
 const yargs = require('yargs')
 
 // .option(name, { alias, describe, type:string, demandOption }) // demandOption == required
@@ -16,7 +18,8 @@ yargs
   .command('recolor', 'Recolors .svgs\' fill color', (yargs) => {
     return yargs.usage('Usage: nuskin recolor --path <path> --fill [fill color]')
                 .option('path', { alias: 'p', describe: 'Path to directory containing SVG files to be recolored', type: 'string', demandOption: true })
-                .option('fill', { alias: 'f', describe: 'The color you want to apply to svgs\' fill attribute (only supports CSS color values e.g.: blue, rgb(0,0,0), #beeeef)', type: 'string' })
+                .option('attr', { alias: 'a', describe: 'The attribute to apply the new color to. Supports "fill", "stroke" & "background". Defaults to "fill" ', type: 'string' })
+                .option('color', { alias: 'c', describe: 'The color you want to apply to svgs\' attribute (only supports CSS color values e.g.: blue, rgb(0,0,0), #beeeef)', type: 'string' })
   }, recolor)
   .help()
   .argv
@@ -25,45 +28,61 @@ yargs
 // 0: <path> Folder path containing SVG files
 // 1: [fill] Color replacement
 function recolor(argv) {
-  const folderPath = argv.path
-  const fillColor = argv.fill
+  const pathArg = argv.path
+  const color = argv.color
+  const attr = argv.attr || 'fill'
 
-  if (!argv.fill && !argv.stroke) {
-    console.log('No fill color provided. Please add a color argument.(see `$ nuskin --help` for more info)') // or stroke color entered.
-    return
-  }
+  if (!['fill', 'stroke', 'background'].includes(attr))
+    throw new Error('"attr" argument must have a value of "fill", "stroke" or "background"')
+
+  if (!color)
+    throw new Error('No color provided. Please add a color argument.(see `$ nuskin --help` for more info)')
 
   try {
-    const filenames = getFolderContentInfo(folderPath)
-    console.log(`Found ${filenames.length} SVG files.\r\n`)
+    const filenames = getAbsoluteFilePaths(pathArg)
+    const isSolo = filenames.length === 1
+    console.log(`Found ${filenames.length} SVG file${isSolo ? '' : 's'} at path.\r\n`)
 
-    for (let i = 0; i < filenames.length; i++) {
-      const filename = filenames[i]
-      const fullFilePath = folderPath + path.sep + filename
-      let svgStrData = fs.readFileSync(fullFilePath).toString('utf8')
+    for (let i = 0; i < filenames.length; i++)
+      recolorSvgAtAbsolutePath(filenames[i], color, attr)
 
-      // 1- check if fill="<color>"
-      // 2- check if fill fill:<color>;
-
-      // Already has inline fill color. Replace with new color value
-      if ((svgStrData.match(fillRegex) || []).length > 0 && fillColor) {
-        console.log(`Changing inline fill color...`)
-        svgStrData = svgStrData.replace(fillRegex, `fill="${fillColor}"`)
-      }
-      
-      // Already has style fill color. Replace with new color value
-      if ((svgStrData.match(fillStyleRegex) || []).length > 0 && fillColor) {
-        console.log('Changing style fill color...')
-        svgStrData = svgStrData.replace(fillStyleRegex, `fill:${fillColor};`)
-      }
-
-      // Overwrite file content with new data
-      fs.writeFileSync(fullFilePath, svgStrData)
-      console.log('Successfully changed color of ' + filename + '!\r\n')
-    }
   } catch (err) {
     console.log(err)
   }
+}
+
+function recolorSvgAtAbsolutePath(pathArg, color, attr) {
+  const regex = new RegExp(`${attr}:([#\(,\) ]|[A-z]|[0-9])+;`)
+  let svgStrData = fs.readFileSync(pathArg).toString('utf8')
+
+  // Already has style color. Replace with new color value
+  if ((svgStrData.match(regex) || []).length > 0) {
+    console.log(`Changing ${attr} color...`)
+    svgStrData = svgStrData.replace(regex, `${attr}:${color};`)
+
+  } else if ((svgStrData.match(styleTagRegex) || []).length > 0) {
+    // TODO
+  } else {
+
+    svgStrData = svgStrData.replace('<svg', `<svg style="${attr}:${color};"`)
+  }
+
+  // Overwrite file content with new data
+  fs.writeFileSync(pathArg, svgStrData)
+  console.log('Successfully changed color of ' + path.basename(pathArg) + '!\r\n')
+}
+
+function getAbsoluteFilePaths(filepath) {
+  
+  if (!path.isAbsolute(filepath)) {
+    filepath = path.resolve(filepath)
+  }
+
+  const pathStats = fs.lstatSync(filepath)
+  if (pathStats.isFile() && path.extname(filepath).toLowerCase() === '.svg')
+    return [filepath]
+
+  return getFolderContentInfo(filepath)
 }
 
 function getFolderContentInfo(folderName) {
@@ -73,5 +92,5 @@ function getFolderContentInfo(folderName) {
       return dirent.isFile() && dirent.name.includes('.svg')
     })
 
-  return files.map(file => file.name)
+  return files.map(file => path.join(folderName, file.name))
 }
