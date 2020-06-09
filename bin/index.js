@@ -1,4 +1,7 @@
 #!/usr/bin/env node
+Array.prototype.indexOrUndefined = function(index) {
+  return this.length >= index + 1 ? this[index] : undefined
+}
 
 const fs = require('fs')
 const path = require('path')
@@ -52,19 +55,25 @@ function recolor(argv) {
 }
 
 function recolorSvgAtAbsolutePath(pathArg, color, attr) {
-  const regex = new RegExp(`${attr}:([#\(,\) ]|[A-z]|[0-9])+;`)
+  const attrRegex = new RegExp(`${attr}:([#\(,\) ]|[A-z]|[0-9])+;`)
   let svgStrData = fs.readFileSync(pathArg).toString('utf8')
+  let startSvgTagData = (svgStrData.match(svgStartingTagRegex) || []).indexOrUndefined(0)
+  let svgStyleTagData = ((startSvgTagData || '').match(styleTagRegex) || []).indexOrUndefined(0)
+  let targetStyle = ((svgStyleTagData || '').match(attrRegex) || []).indexOrUndefined(0)
 
-  // Already has style color. Replace with new color value
-  if ((svgStrData.match(regex) || []).length > 0) {
-    console.log(`Changing ${attr} color...`)
-    svgStrData = svgStrData.replace(regex, `${attr}:${color};`)
-
-  } else if ((svgStrData.match(styleTagRegex) || []).length > 0) {
-    // TODO
-  } else {
-
+  if (!svgStyleTagData) {
+    // Does not have style tag yet
     svgStrData = svgStrData.replace('<svg', `<svg style="${attr}:${color};"`)
+
+  } else if (!targetStyle) {
+    // Has style tag and does not have target style attribute
+    let newSvgStyleTagData = svgStyleTagData.replace('style="', `style="${attr}:${color};`)
+    svgStrData = svgStrData.replace(svgStyleTagData, newSvgStyleTagData)
+
+  } else {
+    // Has style tag & target attribute
+    let newSvgStyleTagData = svgStyleTagData.replace(targetStyle, `${attr}:${color};`)
+    svgStrData = svgStrData.replace(svgStyleTagData, newSvgStyleTagData)
   }
 
   // Overwrite file content with new data
