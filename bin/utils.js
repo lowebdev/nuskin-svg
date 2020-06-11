@@ -48,7 +48,8 @@ function copyFolderRecursiveSync(source, target) {
   let files = []
 
   //check if folder needs to be created or integrated
-  let targetFolder = path.join(target, path.basename(source))
+  let targetFolder = path.basename(source) === path.basename(target) ? target : path.join(target, path.basename(source))
+
   if (!fs.existsSync(targetFolder))
     fs.mkdirSync(targetFolder, { recursive: true })
 
@@ -64,6 +65,10 @@ function copyFolderRecursiveSync(source, target) {
       }
     })
   }
+}
+
+function destroyFolderRecursiveSync(target) {
+  // TODO
 }
 
 function fileContains(path, test) {
@@ -87,6 +92,7 @@ module.exports = {
   copyFolderRecursiveSync,
   fileContains,
   allFilesInDirContain,
+  destroyFolderRecursiveSync,
   styleAttributeRegex,
   svgStartingTagRegex
 }
