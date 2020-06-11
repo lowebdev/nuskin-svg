@@ -1,14 +1,14 @@
 const fs = require('fs')
 const path = require('path')
-const utils = require('./utils')
+const u = require('../utils')
 const attributes = ['fill', 'stroke', 'background']
 
 function recolorSvgAtAbsolutePath(pathArg, color, attr) {
 
   const attrRegex = new RegExp(`${attr}:([#\(,\) ]|[A-z]|[0-9])+;`)
   let svgStrData = fs.readFileSync(pathArg).toString('utf8')
-  let startSvgTagData = (svgStrData.match(utils.svgStartingTagRegex) || []).indexOrUndefined(0)
-  let svgStyleTagData = ((startSvgTagData || '').match(utils.styleAttributeRegex) || []).indexOrUndefined(0)
+  let startSvgTagData = (svgStrData.match(u.svgStartingTagRegex) || []).indexOrUndefined(0)
+  let svgStyleTagData = ((startSvgTagData || '').match(u.styleAttributeRegex) || []).indexOrUndefined(0)
   let targetStyle = ((svgStyleTagData || '').match(attrRegex) || []).indexOrUndefined(0)
 
   if (!svgStyleTagData) {
@@ -44,7 +44,7 @@ function recolor(argv) {
     throw new Error('No color provided. Please add a color argument.(see `$ nuskin --help` for more info)')
 
   try {
-    const filenames = utils.getAbsoluteFilePaths(pathArg)
+    const filenames = u.getAbsoluteFilePaths(pathArg)
     const isSolo = filenames.length === 1
     console.log(`Found ${filenames.length} SVG file${isSolo ? '' : 's'} at provided path`)
 
@@ -57,4 +57,4 @@ function recolor(argv) {
   }
 }
 
-module.exports = { recolor, recolorSvgAtAbsolutePath }
+module.exports = recolor
