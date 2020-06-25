@@ -1,12 +1,9 @@
 const path = require('path')
 const fs = require('fs')
+const x = require('./ext/s.js')
 
 const styleAttributeRegex = /\s*style="([#\(,:;\) ]|[A-z]|[0-9])+"/g
 const svgStartingTagRegex = /<svg(\s|[a-z]|[A-Z]|["=:;,.]|[^<])+/
-
-Array.prototype.indexOrUndefined = function(index) {
-  return this.length >= index + 1 ? this[index] : undefined
-}
 
 function getAbsoluteFilePaths(filepath) {
 

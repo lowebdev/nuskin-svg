@@ -1,8 +1,5 @@
 #!/usr/bin/env node
 
-const fs = require('fs')
-const path = require('path')
-const attributes = ['fill', 'stroke', 'background']
 const recolor = require('./cmds/recolor')
 const reset = require('./cmds/reset')
 const yargs = require('yargs')
@@ -27,20 +24,3 @@ yargs
   }, reset)
   .help()
   .argv
-
-// function main(argv) {
-//   // Prints command name
-//   const cmdName = (argv._ || [''])[0]
-
-//   let filesToSave;
-//   switch (cmdName) {
-//     case 'recolor':
-//       break
-
-//     case 'reset':
-//       break
-    
-//     default:
-//       break
-//   }
-// }
