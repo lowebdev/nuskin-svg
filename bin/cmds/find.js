@@ -1,35 +1,4 @@
-RegExp.prototype.firstMatch = function (str) {
-  if (typeof str !== 'string')
-    throw new Error('Argument must be of type String')
-
-  const matches = this.exec(str)
-  return matches ? matches[0] : null
-}
-
-RegExp.startTagRegExp = function (targetHTMLTag) {
-  return new RegExp(`<${targetHTMLTag}\\s*[A-z0-9=":.;#/\\s]*>`)
-}
-
-String.prototype.matchCount = function (regexp) {
-  if (RegExp !==  regexp.constructor)
-    throw new Error('argument must be of type RegExp')
-
-  const test = !regexp.global ? new RegExp(regexp.source, 'g') : regexp
-  return (this.match(test) || []).length
-}
-
-String.prototype.firstMatch = function (regexp, defaultValue = null) {
-  if (RegExp !==  regexp.constructor)
-    throw new Error('argument must be of type RegExp')
-
-  const matches = this.match(regexp)
-  return matches ? matches[0] : defaultValue
-}
-
-Array.prototype.isEmpty = function () {
-  return this.length < 1
-}
-
+const x = require('../ext/s')
 const svg_start_tag_regex = /<svg\s*[A-z0-9=":.;#/\s]*>/
 const defs_regex = /<defs>[A-z0-9-_{:(),;. #}<>/]*<\/defs>/
 const style_regex = /<style>[A-z0-9-_{:(),;. #}]*<\/style>/g

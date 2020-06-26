@@ -6,7 +6,8 @@ function reset(argv) {
 
   const pathArg = argv.path
   const attr = argv.attr
-
+  resetAll(pathArg)
+  return
   try {
     const filenames = u.getAbsoluteFilePaths(pathArg)
     const isSolo = filenames.length === 1
@@ -18,6 +19,14 @@ function reset(argv) {
   } catch (err) {
     console.log(err)
   }
+}
+
+function resetAll(pathArg, attribute) {
+  let svgData = fs.readFileSync(pathArg).toString('utf8')
+  svgData = svgData.replace(RegExp.matchingHTMLTag('style'), '')
+  svgData = svgData.replace(RegExp.matchingHTMLAttribute('style'), '')
+  svgData = svgData.replace(RegExp.matchingHTMLAttribute('class'), '')
+  fs.writeFileSync(pathArg, svgData)
 }
 
 function resetColorsAtPath(pathArg, attribute) {

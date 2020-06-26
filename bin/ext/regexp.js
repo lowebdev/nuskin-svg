@@ -6,6 +6,22 @@ RegExp.prototype.firstMatch = function (str) {
   return matches ? matches[0] : null
 }
 
-RegExp.startTagRegExp = function (targetHTMLTag) {
+RegExp.matchingHTMLStartTag = function (targetHTMLTag) {
   return new RegExp(`<${targetHTMLTag}\\s*[A-z0-9=":.;#/\\s]*>`)
+}
+
+RegExp.matchingHTMLTag = function (targetHTMLTag) {
+  return new RegExp(`<${targetHTMLTag}>[A-z0-9-_{:(),;. #}<>/]*</${targetHTMLTag}>`, 'g')
+}
+
+RegExp.matchingHTMLAttribute = function (targetHTMLTag) {
+  return new RegExp(`${targetHTMLTag}="[A-z0-9-:(),; #]+"\\s*`, 'g')
+}
+
+RegExp.matchingCSSProperty = function (propertyName = '[A-z0-9-]+') {
+return new RegExp(`${propertyName}:[A-z0-9-_:(),. #]+;`, 'g')
+}
+
+RegExp.matchingCSSRule = function () {
+  return RegExp('\.[A-z_0-9- ]+{{1}[A-z0-9-_:(),;. #]+}', 'g')
 }
