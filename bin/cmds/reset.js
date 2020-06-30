@@ -6,26 +6,28 @@ function reset(argv) {
 
   const pathArg = argv.path
   const attr = argv.attr
-  resetAll(pathArg)
-  return
+
   try {
     const filenames = u.getAbsoluteFilePaths(pathArg)
     const isSolo = filenames.length === 1
     console.log(`Found ${filenames.length} SVG file${isSolo ? '' : 's'} at provided path`)
 
+    const reset_function = attr ? resetColorsAtPath : resetAll
     for (let i = 0; i < filenames.length; i++)
-      resetColorsAtPath(filenames[i], attr)
+    reset_function(filenames[i], attr)
 
   } catch (err) {
     console.log(err)
   }
 }
 
-function resetAll(pathArg, attribute) {
+function resetAll(pathArg) {
   let svgData = fs.readFileSync(pathArg).toString('utf8')
+
   svgData = svgData.replace(RegExp.matchingHTMLTag('style'), '')
   svgData = svgData.replace(RegExp.matchingHTMLAttribute('style'), '')
   svgData = svgData.replace(RegExp.matchingHTMLAttribute('class'), '')
+
   fs.writeFileSync(pathArg, svgData)
 }
 
