@@ -1,83 +1,26 @@
 #!/usr/bin/env node
 
-const fs = require('fs')
+const recolor = require('./cmds/recolor')
+const reset = require('./cmds/reset')
 const yargs = require('yargs')
-const fillRegex = /(fill=")#{0,1}([A-z]|[0-9]){0,}"/
 
-// Arguments
-// 0: Folder path containing SVG files
-// 1: Color replacement
-// const args = process.argv.slice(2);
-yargs.options
-const options = yargs
- .usage('Usage: -d <dir> -c <color>')
- .option('d', { alias: 'dir', describe: 'Directory containing SVG files to be recolored', type: 'string', demandOption: true })
- .option('c', { alias: 'color', describe: 'The color (only supports hex values) you want to apply to svgs\' fill attribute', type: 'string', demandOption: true })
- .argv
-
-const folderPath = options.d
-const color = options.c
-
-// 1- fs get folder from arg 0
-// 2- scan for all svg files
-// 3- for each files, get file content and change fill="" (regex) for hex color then save
-async function recolor() {
-  try {
-    
-    const filenames = await getFolderContentInfo(folderPath)
-    console.log(filenames)
-
-    for (let i = 0; i < filenames.length; i++) {
-      const filename = filenames[i]
-      const fullFilePath = folderPath + '\\' + filename
-
-      fs.readFile(fullFilePath, (err, data) => {
-        const strData = data.toString('utf8')
-
-        // 1- check if fill=""
-        // 2- else check for <path & replace with <path fill=""
-        const alreadyHasFillColor = (strData.match(fillRegex) || []).length > 0
-        let updatedSvgData
-
-        if (alreadyHasFillColor) {
-
-          // Already has fill color. Replace with new color value
-          console.log('Already had a fill color. Replaced by new fill color')
-          updatedSvgData = strData.replace(fillRegex, `fill="${color}"`)
-        } else {
-
-          // No color yet. Add color
-          console.log('Did not have any color yet. Added fill color')
-          updatedSvgData = strData.replace('<path ', `<path fill="${color}" `)
-        }
-        console.log(updatedSvgData)
-
-        // Overwrite file content with new data
-        fs.writeFile(fullFilePath, updatedSvgData, (err) => {
-          if (err && typeof err === 'error') throw err
-          console.log('Successfully changed color of ' + filename)
-        })
-      })
-    }
-  } catch (err) {
-    console.log(err)
-  }
-
-}
-
-async function getFolderContentInfo(folderName) {
-  return new Promise((resolve, reject) => {
-
-    fs.readdir(folderName, { withFileTypes: true }, async (err, dirContent) => {
-      if (err) reject(err)
-
-      const files = dirContent.filter(dirent => {
-        return dirent.isFile() && dirent.name.includes('.svg')
-      })
-
-      resolve(files.map(file => file.name))
-    })
+// .option(name, { alias, describe, type:string, demandOption }) // demandOption == required
+yargs
+  // Help command
+  .command('$0', 'Default command calls help', () => {}, (argv) => {
+    console.log(`use 'nuskin --help' for a list of commands`)
   })
-}
-
-recolor()
+  // Recolor command
+  .command('recolor', 'Recolors a single (or all .svg in containing folder if path arg is a dir) .svg file\'s fill, background or stroke attribute', (yargs) => {
+    return yargs.usage('Usage: nuskin recolor --path <path> --attr [attribute to recolor] --color [color to apply to attribute]')
+                .option('path', { alias: 'p', describe: 'Path to file or directory containing SVG files to be recolored', type: 'string', demandOption: true })
+                .option('attr', { alias: 'a', describe: 'The attribute to apply the new color to. Supports "fill", "stroke" & "background". Defaults to "fill" ', type: 'string' })
+                .option('color', { alias: 'c', describe: 'Valid CSS color value to apply to the svgs\' attribute. e.g.: rgba(0,0,0,1), #fff, blue, etc.', type: 'string' })
+  }, recolor)
+  .command('reset', 'Removes colors of a single (or all .svg in containing folder if path arg is a dir) .svg file\'s fill, background, stroke or all attribute(s)', (yargs) => {
+    return yargs.usage('Usage: nuskin reset --path <path> --attr [attribute to recolor]')
+                .option('path', { alias: 'p', describe: 'Path to file or directory containing SVG files to reset', type: 'string', demandOption: true })
+                .option('attr', { alias: 'a', describe: 'The attribute to reset. Supports "fill", "stroke", "background". If none is specified, all attributes will be reset', type: 'string' })
+  }, reset)
+  .help()
+  .argv
