@@ -7,7 +7,7 @@ RegExp.prototype.firstMatch = function (str) {
 }
 
 RegExp.matchingHTMLStartTag = function (targetHTMLTag) {
-  return new RegExp(`<${targetHTMLTag}\\s*[A-z0-9=":.;#/\\s]*>`)
+  return new RegExp(`<${targetHTMLTag}\\s*[A-z0-9-=":.;#/\\s]*>`)
 }
 
 RegExp.matchingHTMLTag = function (targetHTMLTag) {
@@ -22,6 +22,6 @@ RegExp.matchingCSSProperty = function (propertyName = '[A-z0-9-]+') {
 return new RegExp(`${propertyName}:[A-z0-9-_:(),. #]+;`, 'g')
 }
 
-RegExp.matchingCSSRule = function () {
-  return RegExp('\.[A-z_0-9- ]+{{1}[A-z0-9-_:(),;. #]+}', 'g')
+RegExp.matchingCSSRule = function (cssRule = '\.[A-z_0-9- ]+') {
+  return RegExp(`${cssRule}{{1}[A-z0-9-_:(),;. #]+}`, 'g')
 }
